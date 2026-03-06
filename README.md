@@ -31,10 +31,5 @@ Built with a futuristic "Bento-grid" UI, the platform features a custom JavaScri
 * **Icons:** Lucide Icons.
 * **Architecture:** Component-based rendering pattern contained entirely within a single `index.html` file, utilizing a centralized `AppState` object for instantaneous DOM mutations.
 
-## 🚀 How to Run Locally
 
-Because this project uses vanilla web technologies and a CDN-based stack, there are no heavy `npm` installations required.
-
-1. Clone the repository:
-   ```bash
    git clone [https://github.com/your-username/InternBridge-TN.git](https://github.com/your-username/InternBridge-TN.git)
