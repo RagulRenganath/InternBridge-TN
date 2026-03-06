@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternBridge TN - Positivity & Growth</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa',
+                            500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a',
+                        },
+                        bento: {
+                            bg: '#f8fafc', card: '#ffffff', border: '#e2e8f0'
+                        }
+                    },
+                    boxShadow: {
+                        'bento': '0 10px 40px -10px rgba(0, 0, 0, 0.08), 0 0 10px rgba(0,0,0,0.02)',
+                        'bento-hover': '0 20px 40px -10px rgba(37, 99, 235, 0.15), 0 0 10px rgba(0,0,0,0.03)',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: theme('colors.bento.bg'); overflow: hidden; color: #1e293b; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Bright Ambient Background Elements */
+        .ambient-blob { position: absolute; border-radius: 50%; filter: blur(120px); z-index: -1; opacity: 0.5; }
+        
+        .bento-card {
+            background: theme('colors.bento.card'); border-radius: 24px;
+            border: 1px solid theme('colors.bento.border'); box-shadow: theme('boxShadow.bento');
+            transition: all 0.3s ease; position: relative; overflow: hidden;
+        }
+        .bento-card:hover { transform: translateY(-4px); box-shadow: theme('boxShadow.bento-hover'); border-color: theme('colors.brand.300'); }
+
+        .bento-glass {
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 1);
+        }
+
+        /* Fixed Animations to guarantee visibility */
+        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+        .stagger-1 { animation-delay: 0.05s; }
+        .stagger-2 { animation-delay: 0.1s; }
+        .stagger-3 { animation-delay: 0.15s; }
+        .stagger-4 { animation-delay: 0.2s; }
+
+        .framer-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .framer-btn:active { transform: scale(0.96); }
+
+        .kanban-col { background: #f1f5f9; border-radius: 20px; border: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col font-sans relative">
+
+    <div class="ambient-blob bg-blue-400 w-[600px] h-[600px] top-[-100px] left-[-100px]"></div>
+    <div class="ambient-blob bg-amber-300 w-[500px] h-[500px] bottom-[-50px] right-[-50px]"></div>
+    <div class="ambient-blob bg-emerald-200 w-[400px] h-[400px] top-[40%] left-[30%] opacity-40"></div>
+
+    <div id="app" class="h-full w-full relative z-10 flex"></div>
+
+    <script>
+        // --- RICH DATA PAYLOADS ---
+        const DB = {
+            currentUser: {
+                name: "R Ragul Renganath",
+                role: "MBA Finance",
+                college: "Amrita School of Business",
+                undergrad: "BA Economics, PSG CAS",
+                avatar: "https://ui-avatars.com/api/?name=Ragul+Renganath&background=2563eb&color=fff&size=128&bold=true",
+                metrics: { applied: 18, interviewing: 4, earned: "₹45,000", profileScore: 92 },
+                timeline: [
+                    { stage: "offer", company: "Razorpay SME", role: "FinTech Analyst", date: "Mar 02, 2026", stipend: "₹20,000/mo" },
+                    { stage: "interview", company: "Zerodha", role: "Equity Research", date: "Mar 05, 2026", stipend: "₹25,000/mo" },
+                    { stage: "applied", company: "TVS Credit", role: "Risk Analyst", date: "Mar 06, 2026", stipend: "₹22,000/mo" },
+                    { stage: "applied", company: "Motilal Oswal", role: "Wealth Mgmt Intern", date: "Feb 28, 2026", stipend: "₹15,000/mo" }
+                ]
+            },
+            jobs: [
+                { id: 1, title: "Equity Research Intern", company: "Zerodha", location: "Chennai / Hybrid", stipend: "₹25,000/mo", duration: "3 Months", domain: "Finance", status: "approved", match: 98, logo: "Z", color: "text-blue-700 bg-blue-100" },
+                { id: 2, title: "FinTech Growth Analyst", company: "Razorpay SME", location: "Coimbatore", stipend: "₹20,000/mo", duration: "6 Months", domain: "Finance", status: "approved", match: 95, logo: "R", color: "text-indigo-700 bg-indigo-100" },
+                { id: 3, title: "Credit Risk Analyst", company: "TVS Credit", location: "Chennai", stipend: "₹22,000/mo", duration: "6 Months", domain: "Finance", status: "approved", match: 92, logo: "T", color: "text-emerald-700 bg-emerald-100" },
+                { id: 4, title: "Market Research Trainee", company: "Zoho", location: "Madurai", stipend: "₹18,000/mo", duration: "3 Months", domain: "Economics", status: "approved", match: 89, logo: "Z", color: "text-rose-700 bg-rose-100" },
+                { id: 5, title: "Investment Banking Analyst", company: "Avendus Capital", location: "Chennai", stipend: "₹35,000/mo", duration: "6 Months", domain: "Finance", status: "approved", match: 96, logo: "A", color: "text-amber-700 bg-amber-100" },
+                { id: 6, title: "Economic Data Analyst", company: "LatentView", location: "Chennai", stipend: "₹20,000/mo", duration: "4 Months", domain: "Economics", status: "approved", match: 88, logo: "L", color: "text-cyan-700 bg-cyan-100" },
+                { id: 11, title: "Corporate Finance Trainee", company: "Murugappa Group", location: "Chennai", stipend: "₹28,000/mo", duration: "6 Months", domain: "Finance", status: "pending", match: 90, logo: "M", color: "text-purple-700 bg-purple-100" },
+                { id: 12, title: "Business Operations Intern", company: "Roots Industries", location: "Coimbatore", stipend: "₹15,000/mo", duration: "3 Months", domain: "Operations", status: "pending", match: 75, logo: "R", color: "text-orange-700 bg-orange-100" }
+            ],
+            news: [
+                { cat: "Finance", title: "RBI cuts repo rate by 25 bps, boosting SME lending prospects", source: "Mint", time: "2h ago", url: "https://www.livemint.com/" },
+                { cat: "Finance", title: "Coimbatore FinTech 'PayLocal' raises $8M Series B", source: "YourStory", time: "5h ago", url: "https://yourstory.com/" },
+                { cat: "Economics", title: "Tamil Nadu exports cross $45 Billion, driven by new SEZ policies", source: "Business Standard", time: "1d ago", url: "https://www.business-standard.com/" },
+                { cat: "Finance", title: "SEBI issues new guidelines for retail algorithmic trading", source: "Moneycontrol", time: "3d ago", url: "https://www.moneycontrol.com/" },
+                { cat: "Marketing", title: "Vernacular influencer marketing sees 60% YoY growth in Tier 2 cities", source: "ET BrandEquity", time: "2d ago", url: "https://brandequity.economictimes.indiatimes.com/" }
+            ],
+            videos: [
+                { hub: "prep", cat: "Aptitude", title: "TCS NQT Advanced Quants Shortcuts", duration: "45:00", ytId: "8popRopGEwI", views: "12K Views" },
+                { hub: "prep", cat: "Aptitude", title: "Data Interpretation Mastery 2026", duration: "32:15", ytId: "OuxXv6J3FmI", views: "8.5K Views" },
+                { hub: "prep", cat: "Finance", title: "Mastering DCF Valuation in 30 Mins", duration: "35:20", ytId: "7m1Qh3V7nIM", views: "22K Views" },
+                { hub: "prep", cat: "Finance", title: "Reading Balance Sheets Like a Pro", duration: "42:10", ytId: "WEdMAV1aQWc", views: "15K Views" },
+                { hub: "prep", cat: "GD", title: "How to Enter & Dominate a Noisy GD", duration: "18:20", ytId: "P6z7H3K8v9o", views: "45K Views" },
+                { hub: "motivate", cat: "Mindset", title: "Stop Wasting Time - Deep Work Routine", duration: "15:30", ytId: "ZXsQAXx_ao0", views: "1.2M Views" },
+                { hub: "motivate", cat: "Alumni", title: "From Tier-2 College to Goldman Sachs", duration: "48:10", ytId: "1-SjgQnQ1Yg", views: "85K Views" },
+                { hub: "motivate", cat: "Mindset", title: "Overcoming Imposter Syndrome in Interviews", duration: "12:45", ytId: "ZQUxL4Jm1Lo", views: "34K Views" },
+                { hub: "motivate", cat: "Mindset", title: "The 1% Rule for Continuous Growth", duration: "18:20", ytId: "vj-91dMvqqo", views: "200K Views" }
+            ],
+            candidates: [
+                { id: 201, name: "Karthik S", college: "KCT Coimbatore", degree: "B.Tech IT", verified: true, score: 94, skills: ["React", "Node.js"], stage: "interview" },
+                { id: 202, name: "Priya M", college: "PSG CAS", degree: "BA Economics", verified: true, score: 88, skills: ["Data Analysis", "SPSS"], stage: "applied" },
+                { id: 204, name: "Sneha R", college: "Amrita Univ", degree: "MBA Finance", verified: true, score: 96, skills: ["Financial Modeling", "Python"], stage: "offer" },
+                { id: 205, name: "Vikram T", college: "Loyola Chennai", degree: "BA Economics", verified: true, score: 91, skills: ["Research", "PowerBI"], stage: "interview" },
+                { id: 206, name: "Ananya V", college: "SSN College", degree: "B.Tech CS", verified: true, score: 85, skills: ["Python", "SQL"], stage: "applied" },
+                { id: 207, name: "Manoj P", college: "PSG Tech", degree: "MBA Marketing", verified: true, score: 89, skills: ["SEO", "Analytics"], stage: "rejected" }
+            ],
+            cohorts: [
+                { dept: "MBA Finance", students: 120, apps: 845, placed: 64, status: "EXCELLENT" },
+                { dept: "MBA Marketing", students: 140, apps: 920, placed: 58, status: "ON TRACK" },
+                { dept: "B.Tech IT/CS", students: 350, apps: 2100, placed: 185, status: "EXCELLENT" },
+                { dept: "BA Economics", students: 80, apps: 310, placed: 22, status: "NEEDS PUSH" }
+            ],
+            employers: [
+                { name: "Zoho Corporation", active: 12, hired: 45, location: "Chennai / Madurai", logo: "Z" },
+                { name: "TVS Credit", active: 8, hired: 28, location: "Chennai", logo: "T" },
+                { name: "Razorpay SME", active: 5, hired: 15, location: "Coimbatore", logo: "R" },
+                { name: "Freshworks", active: 6, hired: 32, location: "Chennai", logo: "F" },
+                { name: "Zerodha", active: 3, hired: 18, location: "Hybrid", logo: "Z" }
+            ]
+        };
+
+        // --- STATE MANAGER ---
+        const AppState = {
+            view: 'gateway', 
+            tab: 'dashboard',
+            filters: { jobDomain: 'All' },
+            appliedJobs: new Set([1, 2, 3])
+        };
+
+        const Actions = {
+            setRole: (role) => {
+                AppState.view = role;
+                AppState.tab = role === 'admin' ? 'governance' : 'dashboard';
+                UI.render();
+            },
+            setTab: (tab) => {
+                AppState.tab = tab;
+                UI.render(); // Full re-render ensures sidebar highlights correctly
+            },
+            setFilter: (key, val) => {
+                AppState.filters[key] = val;
+                UI.renderContent();
+            },
+            applyJob: (id) => {
+                AppState.appliedJobs.add(id);
+                const job = DB.jobs.find(j => j.id === id);
+                DB.currentUser.metrics.applied++;
+                DB.currentUser.timeline.unshift({
+                    stage: "applied", company: job.company, role: job.title, date: "Today", stipend: job.stipend
+                });
+                UI.renderContent();
+            },
+            moveCandidate: (id, stage) => {
+                const c = DB.candidates.find(x => x.id === id);
+                if (c) c.stage = stage;
+                UI.renderContent();
+            },
+            approveJob: (id) => {
+                const j = DB.jobs.find(x => x.id === id);
+                if (j) j.status = 'approved';
+                UI.renderContent();
+            },
+            rejectJob: (id) => {
+                const j = DB.jobs.find(x => x.id === id);
+                if (j) j.status = 'rejected';
+                UI.renderContent();
+            }
+        };
+
+        // --- UI ENGINE ---
+        const UI = {
+            render: () => {
+                const app = document.getElementById('app');
+                if (AppState.view === 'gateway') {
+                    app.innerHTML = Views.Gateway();
+                } else {
+                    app.innerHTML = `
+                        ${Components.Sidebar()}
+                        <div class="flex-1 flex flex-col h-full overflow-hidden w-full relative pt-16 md:pt-0">
+                            ${Components.Header()}
+                            <div id="main-content" class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar pb-24 md:pb-8"></div>
+                        </div>
+                    `;
+                    UI.renderContent();
+                }
+                lucide.createIcons();
+            },
+            renderContent: () => {
+                const content = document.getElementById('main-content');
+                if (!content) return;
+                
+                let html = '';
+                const { view, tab } = AppState;
+
+                if (view === 'student') {
+                    if (tab === 'dashboard') html = Views.Student.Dashboard();
+                    else if (tab === 'jobs') html = Views.Student.Jobs();
+                    else if (tab === 'news') html = Views.Student.News();
+                    else if (tab === 'prep') html = Views.Student.Prep();
+                    else if (tab === 'motivate') html = Views.Student.Motivation();
+                } else if (view === 'recruiter') {
+                    if (tab === 'dashboard') html = Views.Recruiter.Analytics();
+                    else if (tab === 'discovery') html = Views.Recruiter.Discovery();
+                    else if (tab === 'post') html = Views.Recruiter.Post();
+                    else if (tab === 'pipeline') html = Views.Recruiter.Pipeline();
+                } else if (view === 'admin') {
+                    if (tab === 'governance') html = Views.Admin.Governance();
+                    else if (tab === 'approval') html = Views.Admin.Approval();
+                    else if (tab === 'cohorts') html = Views.Admin.Cohorts();
+                    else if (tab === 'employers') html = Views.Admin.Employers();
+                }
+                
+                content.innerHTML = html;
+                lucide.createIcons();
+            }
+        };
+
+        // --- COMPONENTS ---
+        const Components = {
+            Sidebar: () => {
+                const nav = {
+                    student: [
+                        { id: 'dashboard', icon: 'layout-dashboard', label: 'Growth Dashboard' },
+                        { id: 'jobs', icon: 'briefcase', label: 'Opportunity Board' },
+                        { id: 'news', icon: 'newspaper', label: 'Industry News' },
+                        { id: 'prep', icon: 'play-circle', label: 'Prep Hub' },
+                        { id: 'motivate', icon: 'zap', label: 'Motivation' }
+                    ],
+                    recruiter: [
+                        { id: 'dashboard', icon: 'pie-chart', label: 'Hiring Analytics' },
+                        { id: 'discovery', icon: 'search', label: 'Candidate Discovery' },
+                        { id: 'post', icon: 'plus-square', label: 'Post & Manage' },
+                        { id: 'pipeline', icon: 'users', label: 'Talent Pipeline' }
+                    ],
+                    admin: [
+                        { id: 'governance', icon: 'activity', label: 'Governance Deck' },
+                        { id: 'approval', icon: 'check-circle', label: 'Approval Queue' },
+                        { id: 'cohorts', icon: 'layers', label: 'Cohort Intelligence' },
+                        { id: 'employers', icon: 'building', label: 'Employer Relations' }
+                    ]
+                }[AppState.view];
+
+                const links = nav.map(item => `
+                    <button onclick="Actions.setTab('${item.id}')" 
+                        class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 framer-btn
+                        ${AppState.tab === item.id ? 'bg-blue-50 text-blue-700 font-bold shadow-sm border border-blue-100' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold'}">
+                        <i data-lucide="${item.icon}" class="w-5 h-5 ${AppState.tab === item.id ? 'text-blue-600' : ''}"></i>
+                        <span class="hidden md:block">${item.label}</span>
+                    </button>
+                `).join('');
+
+                return `
+                    <aside class="bento-glass md:bento-card w-full md:w-72 h-16 md:h-auto flex flex-row md:flex-col fixed top-0 md:relative z-50 p-2 md:p-5 md:m-4 justify-between md:justify-start gap-2 md:gap-8 rounded-none md:rounded-3xl shadow-lg border-b md:border-b-auto">
+                        <div class="flex items-center gap-3 px-2 cursor-pointer" onclick="Actions.setRole('gateway')">
+                            <div class="bg-blue-600 p-2.5 rounded-xl text-white shadow-lg shadow-blue-500/30">
+                                <i data-lucide="bridge" class="w-6 h-6"></i>
+                            </div>
+                            <div class="hidden md:block">
+                                <h1 class="font-extrabold text-2xl leading-none tracking-tight text-slate-900">InternBridge</h1>
+                                <span class="text-[10px] font-black text-amber-500 tracking-widest uppercase">Tamil Nadu</span>
+                            </div>
+                        </div>
+                        <nav class="flex flex-row md:flex-col w-full gap-2 overflow-x-auto md:overflow-visible custom-scrollbar">
+                            ${links}
+                        </nav>
+                    </aside>
+                `;
+            },
+            Header: () => {
+                const u = DB.currentUser;
+                const titles = {
+                    student: { dashboard: 'Growth Dashboard', jobs: 'Opportunity Board', news: 'Industry News', prep: 'Prep Hub', motivate: 'Mindset & Motivation' },
+                    recruiter: { dashboard: 'Hiring Analytics', discovery: 'Candidate Discovery', post: 'Post New Role', pipeline: 'Talent Pipeline' },
+                    admin: { governance: 'Governance Deck', approval: 'Approval Queue', cohorts: 'Cohort Intelligence', employers: 'Employer Relations' }
+                };
+                const title = titles[AppState.view][AppState.tab];
+
+                return `
+                    <header class="flex justify-between items-center px-4 md:px-8 py-4 md:py-6 z-40 hidden md:flex">
+                        <div>
+                            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">${title}</h2>
+                            <p class="text-sm text-slate-600 font-semibold mt-1">Ettimadai, Tamil Nadu • Positivity & Growth</p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <button class="p-3 bg-white rounded-full shadow-md border border-slate-200 text-slate-600 hover:text-blue-600 transition-colors relative framer-btn">
+                                <i data-lucide="bell" class="w-5 h-5"></i>
+                                <span class="absolute top-0 right-0 w-3 h-3 bg-rose-500 rounded-full border-2 border-white"></span>
+                            </button>
+                            <div class="flex items-center gap-3 bg-white pl-2 pr-5 py-2 rounded-full shadow-md border border-slate-200 cursor-pointer hover:border-blue-300 transition-all">
+                                <img src="${AppState.view === 'student' ? u.avatar : 'https://ui-avatars.com/api/?name='+AppState.view+'&background=1e293b&color=fff&bold=true'}" class="w-10 h-10 rounded-full border-2 border-blue-100">
+                                <div class="text-sm">
+                                    <p class="font-extrabold text-slate-900 leading-none">${AppState.view === 'student' ? u.name : AppState.view === 'recruiter' ? 'SME Partner' : 'Platform Admin'}</p>
+                                    <p class="text-[10px] font-bold text-blue-600 mt-1 uppercase tracking-wider">${AppState.view === 'student' ? u.role : 'InternBridge TN'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+                `;
+            }
+        };
+
+        // --- VIEWS (FIXED OVERFLOW & WRAPPING ISSUES) ---
+        const Views = {
+            Gateway: () => `
+                <div class="absolute inset-0 bg-slate-50 flex flex-col items-center justify-center p-6 z-50 overflow-hidden">
+                    <div class="absolute inset-0 z-0 overflow-hidden">
+                        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-300/40 rounded-full filter blur-[100px] animate-pulse-slow"></div>
+                        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-300/40 rounded-full filter blur-[100px] animate-pulse-slow" style="animation-delay: 2s;"></div>
+                    </div>
+                    
+                    <div class="z-10 text-center mb-12 animate-fade-in-up">
+                        <div class="inline-flex items-center justify-center p-5 bg-white rounded-3xl shadow-xl border border-slate-200 mb-6">
+                            <i data-lucide="bridge" class="w-12 h-12 text-blue-600"></i>
+                        </div>
+                        <h1 class="text-5xl md:text-7xl font-black text-slate-900 tracking-tight mb-4">InternBridge <span class="text-blue-600">TN</span></h1>
+                        <p class="text-slate-600 text-lg md:text-xl max-w-2xl mx-auto font-bold">A bright, positive ecosystem connecting Tier-2/3 collegiate talent with thriving SMEs and Corporates.</p>
+                    </div>
+
+                    <div class="z-10 grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl animate-fade-in-up" style="animation-delay: 0.2s;">
+                        <div onclick="Actions.setRole('student')" class="bg-white p-8 rounded-3xl shadow-xl border border-slate-200 cursor-pointer hover:-translate-y-2 hover:shadow-2xl hover:border-blue-400 transition-all duration-300 group">
+                            <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-blue-600 transition-all">
+                                <i data-lucide="graduation-cap" class="w-8 h-8 text-blue-600 group-hover:text-white transition-colors"></i>
+                            </div>
+                            <h2 class="text-2xl font-black text-slate-900 mb-3">Student Portal</h2>
+                            <p class="text-slate-600 text-sm leading-relaxed mb-8 font-semibold">Discover micro-internships, build a verified skill wallet, and access high-quality prep to launch your career.</p>
+                            <span class="text-blue-700 font-extrabold text-sm flex items-center gap-2 group-hover:gap-3 transition-all uppercase tracking-wider">Enter Portal <i data-lucide="arrow-right" class="w-4 h-4"></i></span>
+                        </div>
+
+                        <div onclick="Actions.setRole('recruiter')" class="bg-white p-8 rounded-3xl shadow-xl border border-slate-200 cursor-pointer hover:-translate-y-2 hover:shadow-2xl hover:border-amber-400 transition-all duration-300 group">
+                            <div class="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-amber-500 transition-all">
+                                <i data-lucide="briefcase" class="w-8 h-8 text-amber-600 group-hover:text-white transition-colors"></i>
+                            </div>
+                            <h2 class="text-2xl font-black text-slate-900 mb-3">Recruiter Hub</h2>
+                            <p class="text-slate-600 text-sm leading-relaxed mb-8 font-semibold">Post opportunities, manage talent pipelines, and discover verified, high-signal candidates efficiently.</p>
+                            <span class="text-amber-700 font-extrabold text-sm flex items-center gap-2 group-hover:gap-3 transition-all uppercase tracking-wider">Enter Hub <i data-lucide="arrow-right" class="w-4 h-4"></i></span>
+                        </div>
+
+                        <div onclick="Actions.setRole('admin')" class="bg-white p-8 rounded-3xl shadow-xl border border-slate-200 cursor-pointer hover:-translate-y-2 hover:shadow-2xl hover:border-emerald-400 transition-all duration-300 group">
+                            <div class="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-emerald-500 transition-all">
+                                <i data-lucide="shield-check" class="w-8 h-8 text-emerald-600 group-hover:text-white transition-colors"></i>
+                            </div>
+                            <h2 class="text-2xl font-black text-slate-900 mb-3">Governance Deck</h2>
+                            <p class="text-slate-600 text-sm leading-relaxed mb-8 font-semibold">Monitor platform health, approve job postings, and track detailed cohort placement intelligence.</p>
+                            <span class="text-emerald-700 font-extrabold text-sm flex items-center gap-2 group-hover:gap-3 transition-all uppercase tracking-wider">Enter Deck <i data-lucide="arrow-right" class="w-4 h-4"></i></span>
+                        </div>
+                    </div>
+                </div>
+            `,
+
+            Student: {
+                Dashboard: () => {
+                    const u = DB.currentUser;
+                    return `
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in-up">
+                            
+                            <div class="bento-card bg-blue-600 border-none lg:col-span-8 p-8 md:p-10 stagger-1 shadow-xl">
+                                <div class="flex justify-between items-start mb-10">
+                                    <div>
+                                        <p class="text-blue-100 font-extrabold tracking-widest text-[10px] uppercase mb-3 bg-black/20 inline-block px-3 py-1.5 rounded-full shadow-inner">Student Profile</p>
+                                        <h3 class="text-3xl md:text-5xl font-black tracking-tight mb-2 text-white">${u.name}</h3>
+                                        <p class="text-blue-50 font-bold text-lg">${u.role} • ${u.college}</p>
+                                        <p class="text-blue-100 text-sm mt-3 border-l-4 border-blue-400 pl-4 font-medium">${u.undergrad}</p>
+                                    </div>
+                                    <div class="bg-white text-blue-700 px-5 py-2.5 rounded-xl text-sm font-black shadow-lg flex items-center gap-2 border border-blue-100">
+                                        <i data-lucide="zap" class="w-5 h-5 text-amber-500 fill-amber-500"></i> ${u.metrics.profileScore}% Profile Strength
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                                    <div class="bg-white/10 rounded-2xl p-5 border border-white/20 backdrop-blur-md">
+                                        <p class="text-blue-100 text-[10px] uppercase tracking-wider font-extrabold mb-1">Total Applied</p>
+                                        <p class="text-3xl md:text-4xl font-black text-white">${u.metrics.applied}</p>
+                                    </div>
+                                    <div class="bg-white/10 rounded-2xl p-5 border border-white/20 backdrop-blur-md">
+                                        <p class="text-blue-100 text-[10px] uppercase tracking-wider font-extrabold mb-1">Interviewing</p>
+                                        <p class="text-3xl md:text-4xl font-black text-amber-300">${u.metrics.interviewing}</p>
+                                    </div>
+                                    <div class="bg-white rounded-2xl p-5 shadow-xl border border-blue-100">
+                                        <p class="text-slate-500 text-[10px] uppercase tracking-wider font-extrabold mb-1">Stipend Earned</p>
+                                        <p class="text-2xl md:text-3xl font-black text-blue-600 truncate">${u.metrics.earned}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bento-card bg-white lg:col-span-4 p-8 stagger-2 flex flex-col h-[450px]">
+                                <h3 class="font-black text-slate-900 mb-6 flex items-center gap-2 text-xl">
+                                    <i data-lucide="history" class="w-6 h-6 text-blue-600"></i> Pipeline History
+                                </h3>
+                                <div class="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4">
+                                    ${u.timeline.map(item => `
+                                        <div class="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all group">
+                                            <div class="w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm font-black text-white text-lg ${item.stage === 'offer' ? 'bg-emerald-500' : item.stage === 'interview' ? 'bg-amber-500' : 'bg-blue-500'}">
+                                                ${item.company.charAt(0)}
+                                            </div>
+                                            <div class="flex-1 overflow-hidden">
+                                                <h4 class="text-base font-extrabold text-slate-900 leading-tight mb-1 group-hover:text-blue-700 transition-colors truncate">${item.role}</h4>
+                                                <p class="text-xs text-slate-600 font-bold mb-2 truncate">${item.company} • ${item.stipend}</p>
+                                                <div class="mt-1">
+                                                    <span class="inline-block whitespace-nowrap text-[9px] font-black px-2.5 py-1 rounded text-white uppercase tracking-wider ${item.stage === 'offer' ? 'bg-emerald-600' : item.stage === 'interview' ? 'bg-amber-500' : 'bg-slate-800'}">
+                                                        ${item.stage} • ${item.date}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                Jobs: () => {
+                    const jobs = DB.jobs.filter(j => j.status === 'approved' && (AppState.filters.jobDomain === 'All' || j.domain === AppState.filters.jobDomain)).slice(0,6);
+                    return `
+                        <div class="animate-fade-in-up">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                                <p class="text-slate-600 font-bold text-lg">Opportunity Board <span class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full ml-2 font-black">${jobs.length} Matches</span></p>
+                                <select onchange="Actions.setFilter('jobDomain', this.value)" class="bg-white border-2 border-slate-200 rounded-xl px-4 py-3 text-sm font-extrabold text-slate-800 focus:outline-none focus:border-blue-500 shadow-sm cursor-pointer">
+                                    <option value="All" ${AppState.filters.jobDomain==='All'?'selected':''}>All Domains</option>
+                                    <option value="Finance" ${AppState.filters.jobDomain==='Finance'?'selected':''}>Finance & Research</option>
+                                    <option value="Economics" ${AppState.filters.jobDomain==='Economics'?'selected':''}>Economics</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                ${jobs.map((job, i) => `
+                                    <div class="bento-card bg-white p-6 md:p-8 flex flex-col stagger-${(i%4)+1} border-2 border-slate-100 hover:border-blue-400">
+                                        <div class="flex justify-between items-start mb-6">
+                                            <div class="w-16 h-16 rounded-2xl ${job.color} flex items-center justify-center text-3xl font-black shadow-inner border border-white/50">
+                                                ${job.logo}
+                                            </div>
+                                            <div class="bg-amber-100 text-amber-800 px-3 py-1.5 rounded-full text-[10px] font-black flex items-center gap-1 shadow-sm border border-amber-200">
+                                                <i data-lucide="zap" class="w-3.5 h-3.5 fill-amber-500"></i> ${job.match}% MATCH
+                                            </div>
+                                        </div>
+                                        <h3 class="font-black text-xl md:text-2xl text-slate-900 leading-tight mb-2">${job.title}</h3>
+                                        <p class="text-sm font-bold text-slate-600 mb-6">${job.company}</p>
+                                        
+                                        <div class="flex flex-wrap gap-2 mb-8 mt-auto">
+                                            <span class="bg-slate-100 text-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-200 flex items-center gap-1.5"><i data-lucide="map-pin" class="w-4 h-4 text-blue-500"></i> ${job.location}</span>
+                                            <span class="bg-slate-100 text-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-200 flex items-center gap-1.5"><i data-lucide="indian-rupee" class="w-4 h-4 text-emerald-600"></i> ${job.stipend}</span>
+                                            <span class="bg-slate-100 text-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-200 flex items-center gap-1.5"><i data-lucide="clock" class="w-4 h-4 text-amber-600"></i> ${job.duration}</span>
+                                        </div>
+                                        
+                                        <div class="pt-5 border-t border-slate-100">
+                                            ${AppState.appliedJobs.has(job.id) ? 
+                                                `<button disabled class="w-full py-4 rounded-xl text-sm font-black bg-emerald-50 text-emerald-700 border-2 border-emerald-200 flex justify-center items-center gap-2">
+                                                    <i data-lucide="check-circle" class="w-5 h-5"></i> Application Sent
+                                                </button>` :
+                                                `<button onclick="Actions.applyJob(${job.id})" class="w-full py-4 rounded-xl text-sm font-black bg-blue-600 text-white hover:bg-blue-700 transition-colors framer-btn flex justify-center items-center gap-2 shadow-lg shadow-blue-500/30">
+                                                    Apply Now <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                                                </button>`
+                                            }
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                },
+                News: () => {
+                    return `
+                        <div class="animate-fade-in-up max-w-5xl">
+                            <p class="text-slate-600 font-bold mb-8 text-lg">Industry News Engine <span class="text-sm font-medium block mt-1">Read full articles tailored to the TN business landscape.</span></p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                ${DB.news.map((n, i) => `
+                                    <a href="${n.url}" target="_blank" class="bento-card p-6 md:p-8 stagger-${(i%4)+1} flex flex-col justify-between group border-2 border-slate-200 hover:border-blue-400 block bg-white hover:shadow-xl transition-all">
+                                        <div>
+                                            <div class="flex justify-between items-center mb-5">
+                                                <span class="text-[10px] font-black px-3 py-1 rounded-md uppercase tracking-wider ${n.cat==='Finance'?'bg-emerald-100 text-emerald-800':n.cat==='Economics'?'bg-blue-100 text-blue-800':'bg-amber-100 text-amber-800'}">${n.cat}</span>
+                                                <span class="text-xs font-bold text-slate-500 flex items-center gap-1"><i data-lucide="clock" class="w-4 h-4"></i>${n.time}</span>
+                                            </div>
+                                            <h3 class="font-black text-xl text-slate-900 leading-snug group-hover:text-blue-700 transition-colors">${n.title}</h3>
+                                        </div>
+                                        <div class="mt-8 flex justify-between items-center pt-5 border-t border-slate-100">
+                                            <span class="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><i data-lucide="book-open" class="w-4 h-4"></i> ${n.source}</span>
+                                            <div class="bg-blue-50 p-2.5 rounded-full group-hover:bg-blue-600 transition-colors">
+                                                <i data-lucide="external-link" class="w-5 h-5 text-blue-600 group-hover:text-white transition-colors"></i>
+                                            </div>
+                                        </div>
+                                    </a>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                },
+                Prep: () => {
+                    const videos = DB.videos.filter(v => v.hub === 'prep');
+                    return `
+                        <div class="animate-fade-in-up max-w-6xl">
+                            
+                            <div class="bg-slate-900 p-8 md:p-12 rounded-[2rem] mb-10 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 border-4 border-slate-800">
+                                <div class="relative z-10">
+                                    <h2 class="text-3xl md:text-5xl font-black text-white tracking-tight mb-4">High-Quality Prep Hub</h2>
+                                    <p class="text-slate-300 font-bold max-w-xl leading-relaxed text-sm md:text-lg">Curated YouTube modules for interviews, quantitative aptitude, and structured group discussions.</p>
+                                </div>
+                                <div class="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center shrink-0 shadow-[0_0_30px_rgba(37,99,235,0.6)]">
+                                    <i data-lucide="play" class="w-12 h-12 text-white ml-1 fill-white"></i>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                                ${videos.map((vid, i) => `
+                                    <a href="https://www.youtube.com/watch?v=${vid.ytId}" target="_blank" class="bento-card bg-white p-4 cursor-pointer group hover:border-blue-500 stagger-${(i%4)+1} block border-2 border-slate-200 hover:shadow-2xl transition-all">
+                                        <div class="w-full aspect-video rounded-xl mb-5 relative overflow-hidden bg-slate-200 shadow-inner">
+                                            <img src="https://i.ytimg.com/vi/${vid.ytId}/hqdefault.jpg" alt="${vid.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                            <div class="absolute inset-0 bg-slate-900/20 group-hover:bg-slate-900/50 transition-colors flex items-center justify-center">
+                                                <div class="bg-white p-4 rounded-full shadow-2xl group-hover:scale-110 transition-transform"><i data-lucide="play" class="w-7 h-7 text-rose-600 ml-1 fill-rose-600"></i></div>
+                                            </div>
+                                            <span class="absolute bottom-3 right-3 bg-black text-white text-xs font-bold px-2.5 py-1 rounded inline-block whitespace-nowrap">${vid.duration}</span>
+                                            <span class="absolute top-3 left-3 bg-blue-600 text-white text-[10px] font-black px-3 py-1.5 rounded shadow-lg uppercase tracking-widest inline-block whitespace-nowrap">${vid.cat}</span>
+                                        </div>
+                                        <div class="px-2 pb-2">
+                                            <h4 class="text-lg font-black text-slate-900 leading-tight group-hover:text-blue-700 transition-colors mb-3 line-clamp-2">${vid.title}</h4>
+                                            <div class="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                                <span class="flex items-center gap-1"><i data-lucide="youtube" class="w-4 h-4 text-rose-600"></i> YouTube</span>
+                                                <span>${vid.views}</span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                },
+                Motivation: () => {
+                    const videos = DB.videos.filter(v => v.hub === 'motivate');
+                    return `
+                        <div class="animate-fade-in-up max-w-6xl">
+                            
+                            <div class="bg-amber-500 p-8 md:p-12 rounded-[2rem] mb-10 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 border-4 border-amber-400">
+                                <div class="relative z-10">
+                                    <h2 class="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">Mindset & Motivation</h2>
+                                    <p class="text-slate-900 font-bold max-w-xl leading-relaxed text-sm md:text-lg">High-quality YouTube motivational videos to conquer imposter syndrome and stay driven.</p>
+                                </div>
+                                <div class="w-24 h-24 bg-slate-900 rounded-full flex items-center justify-center shrink-0 shadow-xl">
+                                    <i data-lucide="zap" class="w-12 h-12 text-amber-500 fill-amber-500"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                                ${videos.map((vid, i) => `
+                                    <a href="https://www.youtube.com/watch?v=${vid.ytId}" target="_blank" class="bento-card bg-white p-3 cursor-pointer group hover:border-amber-500 stagger-${(i%4)+1} block border-2 border-slate-200 hover:shadow-xl transition-all">
+                                        <div class="w-full h-44 rounded-xl mb-4 relative overflow-hidden bg-slate-900 shadow-inner">
+                                            <img src="https://i.ytimg.com/vi/${vid.ytId}/hqdefault.jpg" alt="${vid.title}" class="w-full h-full object-cover opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-500">
+                                            <div class="absolute inset-0 flex items-center justify-center">
+                                                <div class="bg-red-600 text-white p-3.5 rounded-xl shadow-2xl group-hover:bg-red-500 group-hover:scale-110 transition-all"><i data-lucide="play" class="w-6 h-6 ml-0.5 fill-white"></i></div>
+                                            </div>
+                                            <span class="absolute bottom-2 left-2 bg-black/80 text-white text-[10px] font-bold px-2.5 py-1 rounded inline-block whitespace-nowrap">${vid.duration}</span>
+                                        </div>
+                                        <div class="px-2 py-1">
+                                            <h4 class="text-base font-black text-slate-900 leading-snug group-hover:text-amber-600 transition-colors mb-2 line-clamp-2">${vid.title}</h4>
+                                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">${vid.cat} • ${vid.views}</p>
+                                        </div>
+                                    </a>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+
+            Recruiter: {
+                Analytics: () => `
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 animate-fade-in-up">
+                        <div class="md:col-span-12 flex flex-col md:flex-row justify-between items-start md:items-center mb-2 stagger-1 gap-4">
+                            <div>
+                                <h3 class="text-2xl font-black text-slate-900">Hiring Analytics Dashboard</h3>
+                                <p class="text-slate-600 font-bold text-sm">Real-time metrics for your active postings.</p>
+                            </div>
+                            <button onclick="Actions.setTab('post')" class="bg-blue-600 text-white px-8 py-3 rounded-xl text-sm font-black shadow-lg hover:bg-blue-700 transition-colors flex items-center gap-2 framer-btn">
+                                <i data-lucide="plus" class="w-5 h-5"></i> Post New Role
+                            </button>
+                        </div>
+
+                        <div class="bento-card bg-white border-2 border-slate-200 md:col-span-4 p-8 stagger-2 border-l-8 border-l-blue-500">
+                            <p class="text-slate-500 text-[10px] font-black uppercase tracking-wider mb-2">Avg. Time to Hire</p>
+                            <div class="flex items-end gap-2">
+                                <h3 class="text-3xl md:text-4xl font-black text-slate-900 truncate">12<span class="text-xl text-slate-500 font-bold ml-1">days</span></h3>
+                                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-1 rounded ml-auto border border-emerald-200 whitespace-nowrap">-15% YoY</span>
+                            </div>
+                        </div>
+                        <div class="bento-card bg-white border-2 border-slate-200 md:col-span-4 p-8 stagger-3 border-l-8 border-l-amber-500">
+                            <p class="text-slate-500 text-[10px] font-black uppercase tracking-wider mb-2">Active Candidates</p>
+                            <div class="flex items-end gap-2">
+                                <h3 class="text-3xl md:text-4xl font-black text-slate-900 truncate">${DB.candidates.filter(c=>c.stage !== 'rejected').length}<span class="text-xl text-slate-500 font-bold ml-1">cands</span></h3>
+                                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-1 rounded ml-auto border border-emerald-200 whitespace-nowrap">+4 this wk</span>
+                            </div>
+                        </div>
+                        <div class="bento-card bg-white border-2 border-slate-200 md:col-span-4 p-8 stagger-4 border-l-8 border-l-emerald-500">
+                            <p class="text-slate-500 text-[10px] font-black uppercase tracking-wider mb-2">Offer Acceptance</p>
+                            <div class="flex items-end gap-2">
+                                <h3 class="text-3xl md:text-4xl font-black text-slate-900 truncate">92%</h3>
+                            </div>
+                            <div class="w-full h-3 bg-slate-100 rounded-full mt-4 overflow-hidden border border-slate-200">
+                                <div class="w-[92%] h-full bg-emerald-500 rounded-full"></div>
+                            </div>
+                        </div>
+
+                        <div class="bento-card bg-white border-2 border-slate-200 md:col-span-12 p-8 md:p-10 stagger-2 flex flex-col">
+                            <h3 class="font-black text-xl text-slate-900 mb-6 flex items-center gap-2">
+                                <i data-lucide="activity" class="w-6 h-6 text-blue-600"></i> Recent Hiring Activity
+                            </h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead>
+                                        <tr class="text-[10px] font-black text-slate-500 uppercase tracking-widest border-b-2 border-slate-100">
+                                            <th class="pb-4 px-4 whitespace-nowrap">Candidate</th>
+                                            <th class="pb-4 px-4 whitespace-nowrap">Role Applied</th>
+                                            <th class="pb-4 px-4 whitespace-nowrap">Status</th>
+                                            <th class="pb-4 px-4 whitespace-nowrap">AI Match Score</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${DB.candidates.map(c => `
+                                            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                                <td class="py-5 px-4">
+                                                    <div class="flex items-center gap-4">
+                                                        <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black text-sm border border-blue-200">${c.name.charAt(0)}</div>
+                                                        <div>
+                                                            <p class="font-black text-base text-slate-900 whitespace-nowrap">${c.name}</p>
+                                                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">${c.degree}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="py-5 px-4 text-sm font-bold text-slate-700 whitespace-nowrap">FinTech Analyst</td>
+                                                <td class="py-5 px-4">
+                                                    <span class="inline-block whitespace-nowrap text-[10px] font-black px-3 py-1.5 rounded uppercase tracking-wider border ${c.stage === 'offer' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : c.stage === 'interview' ? 'bg-amber-100 text-amber-800 border-amber-200' : c.stage === 'rejected' ? 'bg-rose-100 text-rose-800 border-rose-200' : 'bg-blue-100 text-blue-800 border-blue-200'}">${c.stage}</span>
+                                                </td>
+                                                <td class="py-5 px-4 text-lg font-black text-slate-900">${c.score}%</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                Discovery: () => `
+                    <div class="animate-fade-in-up">
+                        <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                            <div>
+                                <h3 class="text-2xl font-black text-slate-900">Candidate Discovery</h3>
+                                <p class="text-slate-600 font-bold text-sm">Search the verified student database.</p>
+                            </div>
+                            <div class="relative w-full md:w-80">
+                                <i data-lucide="search" class="absolute left-4 top-3.5 w-5 h-5 text-slate-400"></i>
+                                <input type="text" placeholder="Search Python, Finance..." class="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-slate-200 text-sm font-bold focus:outline-none focus:border-blue-500 shadow-sm bg-white text-slate-900">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                            ${DB.candidates.map((c, i) => `
+                                <div class="bento-card bg-white p-6 md:p-8 stagger-${(i%4)+1} border-2 border-slate-200 hover:border-blue-400">
+                                    <div class="flex justify-between items-start mb-6">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-14 h-14 rounded-full bg-slate-900 text-white flex items-center justify-center font-black text-xl shadow-md border-2 border-slate-700">
+                                                ${c.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <h4 class="font-black text-lg text-slate-900 flex items-center gap-1 truncate">
+                                                    ${c.name} ${c.verified ? '<i data-lucide="badge-check" class="w-5 h-5 text-blue-500 fill-blue-50"></i>' : ''}
+                                                </h4>
+                                                <p class="text-xs text-slate-600 font-bold truncate">${c.degree} • ${c.college}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-6">
+                                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">Verified Skill Tags</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            ${c.skills.map(s => `<span class="inline-block whitespace-nowrap bg-blue-50 border border-blue-200 text-blue-800 text-[10px] font-black px-3 py-1.5 rounded-md uppercase tracking-wide">${s}</span>`).join('')}
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center pt-5 border-t border-slate-100 mt-auto">
+                                        <div class="inline-block whitespace-nowrap text-[10px] font-black text-emerald-800 bg-emerald-100 px-3 py-1.5 rounded-md border border-emerald-200 flex items-center gap-1 uppercase tracking-wider">
+                                            Score: ${c.score}
+                                        </div>
+                                        <button class="bg-slate-900 text-white font-bold text-xs px-5 py-2.5 rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 shadow-md">Invite <i data-lucide="send" class="w-3 h-3"></i></button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `,
+                Post: () => `
+                    <div class="max-w-3xl mx-auto animate-fade-in-up pb-10">
+                        <p class="text-slate-600 font-bold mb-8 text-lg">Create a structured micro-internship post. All posts are reviewed by College Admins.</p>
+                        <form onsubmit="event.preventDefault(); Actions.setTab('dashboard');" class="bento-card bg-white p-8 md:p-12 shadow-xl border-2 border-slate-200">
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-2">Role Title</label>
+                                    <input type="text" required placeholder="e.g. Financial Analyst Intern" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all">
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-2">Domain</label>
+                                        <select required class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:ring-0 focus:border-blue-500">
+                                            <option>Finance</option><option>Economics</option><option>Technology</option><option>Operations</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-2">Location</label>
+                                        <input type="text" required placeholder="e.g. Coimbatore / Remote" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-2">Stipend (₹/mo)</label>
+                                        <input type="number" required placeholder="15000" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-2">Duration (Months)</label>
+                                        <input type="number" required placeholder="3" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-2">Required Skills</label>
+                                    <textarea rows="3" placeholder="Financial Modeling, Excel, SPSS..." class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all"></textarea>
+                                </div>
+                            </div>
+                            <div class="mt-8 pt-6 border-t border-slate-200 flex justify-end gap-4">
+                                <button type="button" onclick="Actions.setTab('dashboard')" class="px-6 py-3.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors framer-btn whitespace-nowrap">Cancel</button>
+                                <button type="submit" class="px-8 py-3.5 rounded-xl text-sm font-black bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition-all framer-btn flex items-center gap-2 whitespace-nowrap">
+                                    Post Internship <i data-lucide="send" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                `,
+                Pipeline: () => {
+                    const stages = ['applied', 'interview', 'offer', 'rejected'];
+                    const labels = { applied: 'Applied', interview: 'Interviewing', offer: 'Offered', rejected: 'Rejected' };
+                    return `
+                        <div class="h-full flex flex-col animate-fade-in-up">
+                            <p class="text-slate-600 font-bold mb-6 text-lg">Manage talent pipeline for active roles.</p>
+                            <div class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 overflow-x-auto pb-4">
+                                ${stages.map(stage => `
+                                    <div class="kanban-col flex flex-col h-full p-4 min-w-[300px] shadow-inner bg-slate-100 border-2 border-slate-200">
+                                        <div class="flex justify-between items-center mb-5 px-2">
+                                            <h3 class="font-black text-sm text-slate-900 uppercase tracking-wider">${labels[stage]}</h3>
+                                            <span class="bg-white text-slate-900 text-xs font-black px-3 py-1 rounded-md shadow-sm border border-slate-300">${DB.candidates.filter(c => c.stage === stage).length}</span>
+                                        </div>
+                                        <div class="flex-1 overflow-y-auto custom-scrollbar space-y-4">
+                                            ${DB.candidates.filter(c => c.stage === stage).map(c => `
+                                                <div class="bg-white p-5 rounded-2xl shadow-sm border-2 border-slate-200 hover:border-blue-400 transition-colors group cursor-grab relative">
+                                                    <div class="flex justify-between items-start mb-3">
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-900 flex items-center justify-center font-black text-base border border-slate-300">
+                                                                ${c.name.charAt(0)}
+                                                            </div>
+                                                            <div class="overflow-hidden">
+                                                                <h4 class="text-base font-black text-slate-900 leading-none flex items-center gap-1 mb-1.5 truncate">
+                                                                    ${c.name} ${c.verified ? `<i data-lucide="badge-check" class="w-4 h-4 text-blue-600 fill-blue-50"></i>` : ''}
+                                                                </h4>
+                                                                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest truncate">${c.degree}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-5">
+                                                        <span class="inline-block whitespace-nowrap text-[10px] font-black text-amber-800 bg-amber-100 px-3 py-1.5 rounded border border-amber-300 flex items-center gap-1 uppercase tracking-wider w-max">
+                                                            <i data-lucide="zap" class="w-3 h-3 fill-amber-500 text-amber-600"></i> Score: ${c.score}
+                                                        </span>
+                                                    </div>
+                                                    <div class="pt-4 border-t border-slate-100 grid grid-cols-2 gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        ${stage === 'applied' ? `
+                                                            <button onclick="Actions.moveCandidate(${c.id}, 'interview')" class="col-span-2 bg-slate-900 text-white text-[10px] font-black py-2.5 rounded-xl hover:bg-blue-600 transition-colors framer-btn shadow-md whitespace-nowrap">Move to Interview</button>
+                                                        ` : stage === 'interview' ? `
+                                                            <button onclick="Actions.moveCandidate(${c.id}, 'offer')" class="bg-emerald-600 text-white text-[10px] font-black py-2.5 rounded-xl hover:bg-emerald-700 transition-colors framer-btn shadow-md whitespace-nowrap">Offer</button>
+                                                            <button onclick="Actions.moveCandidate(${c.id}, 'rejected')" class="bg-white text-rose-700 border-2 border-rose-200 text-[10px] font-black py-2.5 rounded-xl hover:bg-rose-50 transition-colors framer-btn whitespace-nowrap">Reject</button>
+                                                        ` : `<span class="col-span-2 text-center text-[10px] font-black text-slate-500 uppercase tracking-widest py-1.5 whitespace-nowrap">Final Stage</span>`}
+                                                    </div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+
+            Admin: {
+                Governance: () => `
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 animate-fade-in-up">
+                        <div class="md:col-span-12 mb-2 stagger-1">
+                            <h3 class="text-2xl font-black text-slate-900">Platform Governance Deck</h3>
+                            <p class="text-slate-600 font-bold text-sm">Real-time system health and ecosystem metrics.</p>
+                        </div>
+                        
+                        <div class="bento-card bg-slate-900 md:col-span-12 p-8 md:p-12 flex flex-col md:flex-row justify-between items-center stagger-2 shadow-2xl border-4 border-slate-800">
+                            <div class="flex items-center gap-6 mb-8 md:mb-0 relative z-10">
+                                <div class="w-20 h-20 rounded-[2rem] bg-emerald-500 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.5)]">
+                                    <i data-lucide="shield-check" class="w-10 h-10 text-white"></i>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Platform Status</p>
+                                    <h3 class="text-3xl md:text-4xl font-black text-white flex items-center gap-3">Operational <span class="w-4 h-4 rounded-full bg-emerald-400 animate-pulse-slow shadow-[0_0_15px_rgba(52,211,153,1)]"></span></h3>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 md:gap-8 relative z-10">
+                                <div class="text-center">
+                                    <p class="text-slate-400 text-[9px] font-black uppercase tracking-widest mb-2">Active Students</p>
+                                    <p class="text-3xl md:text-4xl font-black text-white truncate">2,450</p>
+                                </div>
+                                <div class="w-px h-16 bg-slate-700 mt-2"></div>
+                                <div class="text-center">
+                                    <p class="text-slate-400 text-[9px] font-black uppercase tracking-widest mb-2">Live Roles</p>
+                                    <p class="text-3xl md:text-4xl font-black text-blue-400 truncate">184</p>
+                                </div>
+                                <div class="w-px h-16 bg-slate-700 mt-2"></div>
+                                <div class="text-center">
+                                    <p class="text-slate-400 text-[9px] font-black uppercase tracking-widest mb-2">Hires</p>
+                                    <p class="text-3xl md:text-4xl font-black text-emerald-400 truncate">456</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bento-card bg-white md:col-span-12 p-8 md:p-10 stagger-3 border-2 border-slate-200">
+                            <h3 class="font-black text-xl text-slate-900 mb-8 flex items-center gap-2">
+                                <i data-lucide="bar-chart" class="w-6 h-6 text-blue-600"></i> Global Placement Funnel & Metrics
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="bg-slate-50 border-2 border-slate-200 p-8 rounded-2xl text-center shadow-sm">
+                                    <p class="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-2">Total Applications</p>
+                                    <p class="text-3xl md:text-4xl font-black text-slate-900 truncate">5,845</p>
+                                </div>
+                                <div class="bg-blue-50 border-2 border-blue-200 p-8 rounded-2xl text-center shadow-sm">
+                                    <p class="text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2">Interview Stage</p>
+                                    <p class="text-3xl md:text-4xl font-black text-blue-900 truncate">2,630</p>
+                                </div>
+                                <div class="bg-emerald-600 border-2 border-emerald-500 p-8 rounded-2xl text-center shadow-xl shadow-emerald-600/30">
+                                    <p class="text-[10px] font-black text-white uppercase tracking-widest mb-2">Successfully Hired</p>
+                                    <p class="text-3xl md:text-4xl font-black text-white truncate">456</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                Approval: () => {
+                    const pending = DB.jobs.filter(j => j.status === 'pending');
+                    return `
+                        <div class="animate-fade-in-up max-w-5xl">
+                            <div class="flex justify-between items-end mb-8">
+                                <div>
+                                    <h3 class="text-2xl font-black text-slate-900">Job Approval Queue</h3>
+                                    <p class="text-slate-600 font-bold text-sm">Review SME internship posts before they go live.</p>
+                                </div>
+                                <span class="bg-amber-100 text-amber-800 font-black px-5 py-2.5 rounded-lg text-[10px] uppercase tracking-widest shadow-sm border border-amber-300 inline-block whitespace-nowrap">
+                                    ${pending.length} Pending Review
+                                </span>
+                            </div>
+                            <div class="space-y-6">
+                                ${pending.length === 0 ? `
+                                    <div class="bento-card p-16 text-center flex flex-col items-center justify-center bg-white border-2 border-slate-200">
+                                        <div class="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mb-6 border-4 border-emerald-100 shadow-inner">
+                                            <i data-lucide="check-circle" class="w-12 h-12 text-emerald-600"></i>
+                                        </div>
+                                        <h3 class="text-2xl font-black text-slate-900 mb-2">Queue Empty</h3>
+                                        <p class="text-slate-600 font-bold text-lg">All internship posts have been reviewed and published.</p>
+                                    </div>
+                                ` : pending.map((job, i) => `
+                                    <div class="bento-card bg-white p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-6 stagger-${(i%4)+1} border-2 border-slate-100 hover:border-blue-400 shadow-sm transition-all">
+                                        <div class="flex-1 w-full overflow-hidden">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <h3 class="font-black text-2xl text-slate-900 truncate">${job.title}</h3>
+                                                <span class="inline-block whitespace-nowrap text-[9px] font-black bg-slate-100 text-slate-800 px-3 py-1.5 rounded-md uppercase tracking-wider border border-slate-300">${job.domain}</span>
+                                            </div>
+                                            <p class="text-base font-bold text-slate-600 mb-4 truncate">${job.company} • ${job.location}</p>
+                                            <div class="flex flex-wrap gap-4 text-[10px] font-black text-slate-900 bg-slate-50 inline-flex px-5 py-3 rounded-xl border border-slate-200 shadow-inner">
+                                                <span class="flex items-center gap-2 whitespace-nowrap"><i data-lucide="indian-rupee" class="w-4 h-4 text-emerald-600"></i> ${job.stipend}</span>
+                                                <span class="text-slate-300">|</span>
+                                                <span class="flex items-center gap-2 whitespace-nowrap"><i data-lucide="clock" class="w-4 h-4 text-blue-600"></i> ${job.duration}</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-4 w-full md:w-auto mt-6 md:mt-0">
+                                            <button onclick="Actions.rejectJob(${job.id})" class="flex-1 md:flex-none px-6 py-4 rounded-xl text-xs font-black bg-white text-rose-700 border-2 border-rose-200 hover:bg-rose-50 transition-colors framer-btn whitespace-nowrap">Reject</button>
+                                            <button onclick="Actions.approveJob(${job.id})" class="flex-1 md:flex-none px-8 py-4 rounded-xl text-xs font-black bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/40 transition-all framer-btn flex items-center justify-center gap-2 whitespace-nowrap">
+                                                Approve <i data-lucide="check" class="w-5 h-5"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                },
+                Cohorts: () => `
+                    <div class="animate-fade-in-up">
+                        <div class="mb-8">
+                            <h3 class="text-2xl font-black text-slate-900">Cohort Intelligence</h3>
+                            <p class="text-slate-600 font-bold text-sm">Detailed performance metrics across college departments.</p>
+                        </div>
+                        <div class="bento-card p-3 bg-white shadow-xl border-2 border-slate-200">
+                            <div class="overflow-x-auto rounded-xl">
+                                <table class="w-full text-left">
+                                    <thead>
+                                        <tr class="bg-slate-100 border-b-2 border-slate-200">
+                                            <th class="p-6 font-black text-slate-800 text-[10px] uppercase tracking-widest whitespace-nowrap">Department</th>
+                                            <th class="p-6 font-black text-slate-800 text-[10px] uppercase tracking-widest whitespace-nowrap">Total Students</th>
+                                            <th class="p-6 font-black text-slate-800 text-[10px] uppercase tracking-widest whitespace-nowrap">Applications</th>
+                                            <th class="p-6 font-black text-slate-800 text-[10px] uppercase tracking-widest whitespace-nowrap">Placed</th>
+                                            <th class="p-6 font-black text-slate-800 text-[10px] uppercase tracking-widest whitespace-nowrap">Health Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-sm">
+                                        ${DB.cohorts.map(c => `
+                                            <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+                                                <td class="p-6 font-black text-slate-900 text-base whitespace-nowrap">${c.dept}</td>
+                                                <td class="p-6 font-bold text-slate-700 text-base">${c.students}</td>
+                                                <td class="p-6 font-bold text-slate-700 text-base">${c.apps}</td>
+                                                <td class="p-6 font-black text-slate-900 text-lg">${c.placed}</td>
+                                                <td class="p-6">
+                                                    <span class="inline-block whitespace-nowrap px-4 py-2 rounded-md text-[9px] font-black tracking-widest ${c.status === 'EXCELLENT' ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : c.status === 'ON TRACK' ? 'bg-blue-100 text-blue-900 border border-blue-300' : 'bg-amber-100 text-amber-900 border border-amber-300'}">
+                                                        ${c.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                Employers: () => `
+                    <div class="animate-fade-in-up">
+                        <div class="mb-8">
+                            <h3 class="text-2xl font-black text-slate-900">Employer Relations</h3>
+                            <p class="text-slate-600 font-bold text-sm">Top hiring partners and engagement metrics across the ecosystem.</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                            ${DB.employers.map((e, i) => `
+                                <div class="bento-card bg-white p-6 md:p-8 stagger-${(i%4)+1} flex flex-col border-2 border-slate-100 hover:border-blue-400 shadow-sm">
+                                    <div class="flex items-center gap-5 mb-8">
+                                        <div class="w-16 h-16 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-2xl font-black shadow-lg border-2 border-slate-700 shrink-0">
+                                            ${e.logo}
+                                        </div>
+                                        <div class="overflow-hidden">
+                                            <h3 class="font-black text-xl text-slate-900 leading-tight truncate">${e.name}</h3>
+                                            <p class="text-sm font-bold text-slate-600 mt-1 truncate">${e.location}</p>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4 mt-auto">
+                                        <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 shadow-inner">
+                                            <p class="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Active Roles</p>
+                                            <p class="text-3xl font-black text-slate-900 truncate">${e.active}</p>
+                                        </div>
+                                        <div class="bg-blue-50 rounded-xl p-5 border border-blue-200 shadow-sm">
+                                            <p class="text-[9px] font-black text-blue-800 uppercase tracking-widest mb-1">Total Hired</p>
+                                            <p class="text-3xl font-black text-blue-900 truncate">${e.hired}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `
+            }
+        };
+
+        window.onload = () => {
+            UI.render();
+        };
+    </script>
+</body>
+</html>
