@@ -32,4 +32,4 @@ Built with a futuristic "Bento-grid" UI, the platform features a custom JavaScri
 * **Architecture:** Component-based rendering pattern contained entirely within a single `index.html` file, utilizing a centralized `AppState` object for instantaneous DOM mutations.
 
 
-   git clone [https://github.com/your-username/InternBridge-TN.git](https://github.com/your-username/InternBridge-TN.git)
+  
