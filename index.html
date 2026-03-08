@@ -73,7 +73,6 @@
 
         .kanban-col { background: #f1f5f9; border-radius: 20px; border: 1px solid #e2e8f0; }
         
-        /* Bar Chart Animation */
         .bar-fill { animation: fillUp 1s ease-out forwards; transform-origin: bottom; }
         @keyframes fillUp { 0% { transform: scaleY(0); } 100% { transform: scaleY(1); } }
     </style>
@@ -104,8 +103,8 @@
                 ]
             },
             jobs: [
-                { id: 1, title: "Equity Research Intern", company: "Zerodha", location: "Chennai / Hybrid", stipend: "₹25,000/mo", duration: "3 Months", domain: "Finance", status: "approved", match: 98, logo: "Z", color: "text-blue-700 bg-blue-100" },
-                { id: 2, title: "FinTech Growth Analyst", company: "Razorpay SME", location: "Coimbatore", stipend: "₹20,000/mo", duration: "6 Months", domain: "Finance", status: "approved", match: 95, logo: "R", color: "text-indigo-700 bg-indigo-100" },
+                { id: 1, title: "Equity Research Intern", company: "Zerodha", location: "Chennai / Hybrid", stipend: "₹25,000/mo", duration: "3 Months", domain: "Finance", status: "approved", match: 98, logo: "Z", color: "text-blue-700 bg-blue-100", reversePitch: "WEdMAV1aQWc" },
+                { id: 2, title: "FinTech Growth Analyst", company: "Razorpay SME", location: "Coimbatore", stipend: "₹20,000/mo", duration: "6 Months", domain: "Finance", status: "approved", match: 95, logo: "R", color: "text-indigo-700 bg-indigo-100", reversePitch: "7m1Qh3V7nIM" },
                 { id: 3, title: "Credit Risk Analyst", company: "TVS Credit", location: "Chennai", stipend: "₹22,000/mo", duration: "6 Months", domain: "Finance", status: "approved", match: 92, logo: "T", color: "text-emerald-700 bg-emerald-100" },
                 { id: 4, title: "Market Research Trainee", company: "Zoho", location: "Madurai", stipend: "₹18,000/mo", duration: "3 Months", domain: "Economics", status: "approved", match: 89, logo: "Z", color: "text-rose-700 bg-rose-100" },
                 { id: 5, title: "Investment Banking Analyst", company: "Avendus Capital", location: "Chennai", stipend: "₹35,000/mo", duration: "6 Months", domain: "Finance", status: "approved", match: 96, logo: "A", color: "text-amber-700 bg-amber-100" },
@@ -121,20 +120,15 @@
                 { cat: "Marketing", title: "Vernacular influencer marketing sees 60% YoY growth in Tier 2 cities", source: "ET BrandEquity", time: "2d ago", url: "https://brandequity.economictimes.indiatimes.com/" }
             ],
             videos: [
-                // Real, Working Videos for Prep Hub & Motivation
-                // Prep - Quantitative
                 { hub: "prep", cat: "Quant", title: "Quantitative Aptitude - Improve Accuracy & Speed", duration: "12:45", ytId: "WR-_ioCIxYk", views: "145K Views" },
                 { hub: "prep", cat: "Quant", title: "How to Analyze Quantitative Aptitude Questions", duration: "10:30", ytId: "UYa8TsUVAl8", views: "85K Views" },
                 { hub: "prep", cat: "Quant", title: "5-Step Quantitative Aptitude Preparation Plan", duration: "15:20", ytId: "V8pzEEA9suE", views: "110K Views" },
-                // Prep - Interview
                 { hub: "prep", cat: "Interview", title: "Tell Me About Yourself: Best Answer Explained", duration: "18:15", ytId: "1fI79V6YqQA", views: "2.1M Views" },
                 { hub: "prep", cat: "Interview", title: "Answering Tell Me About Yourself: Step-by-Step", duration: "14:20", ytId: "Rpe4WCOFBSM", views: "1.5M Views" },
                 { hub: "prep", cat: "Interview", title: "How to Introduce Yourself in a Job Interview", duration: "11:05", ytId: "8G_kdowzSyk", views: "900K Views" },
-                // Prep - GD
                 { hub: "prep", cat: "GD", title: "Group Discussion Tips for Placements", duration: "08:45", ytId: "4zwBdyEMTIU", views: "45K Views" },
                 { hub: "prep", cat: "GD", title: "How to Prepare for and Crack Group Discussions", duration: "22:10", ytId: "3JYNdQKNl68", views: "340K Views" },
                 { hub: "prep", cat: "GD", title: "GD Interview Topics for MBA Placements", duration: "16:30", ytId: "LlzQwi-zTD4", views: "125K Views" },
-                // Motivation
                 { hub: "motivate", cat: "Mindset", title: "Practical Tips To Deal With Imposter Syndrome", duration: "15:30", ytId: "5fqyLQ4FYxA", views: "1.2M Views" },
                 { hub: "motivate", cat: "Growth", title: "Imposter Syndrome Is a Truth Problem", duration: "09:10", ytId: "V4-pZJHVxUI", views: "85K Views" },
                 { hub: "motivate", cat: "Mindset", title: "Thinking your way out of imposter syndrome | TED", duration: "12:45", ytId: "h7v-GG3SEWQ", views: "2.4M Views" },
@@ -202,7 +196,15 @@
             },
             moveCandidate: (id, stage) => {
                 const c = DB.candidates.find(x => x.id === id);
-                if (c) c.stage = stage;
+                if (c) {
+                    c.stage = stage;
+                    // Feature: WhatsApp Integration engine alerts
+                    if (stage === 'offer') {
+                        UI.showToast(`Offer generated! WhatsApp alert sent to ${c.name}.`, 'check-circle');
+                    } else if (stage === 'interview') {
+                        UI.showToast(`Moved to interview! WhatsApp alert sent to ${c.name}.`, 'message-circle');
+                    }
+                }
                 UI.renderContent();
             },
             approveJob: (id) => {
@@ -225,13 +227,16 @@
             },
             confirmSchedule: () => {
                 const c = DB.candidates.find(x => x.id === AppState.modal.candidateId);
-                if(c) c.stage = 'interview';
+                if(c) {
+                    c.stage = 'interview';
+                    // Feature: WhatsApp Integration Engine
+                    UI.showToast(`Interview Scheduled! WhatsApp invite sent to ${c.name}.`, 'message-circle');
+                }
                 Actions.closeModal();
                 UI.renderContent();
             }
         };
 
-        // --- NEW ATTRACTIVE SVG LOGOS ---
         const GatewayLogo = `
             <svg viewBox="0 0 100 100" class="w-20 h-20 drop-shadow-xl text-blue-600 mx-auto">
                 <rect width="100" height="100" rx="25" fill="#2563eb"/>
@@ -249,6 +254,21 @@
 
         // --- UI ENGINE ---
         const UI = {
+            showToast: (msg, icon = 'info') => {
+                const container = document.getElementById('toast-container');
+                if(!container) return;
+                const toast = document.createElement('div');
+                toast.className = 'bg-slate-900 text-white px-5 py-3.5 rounded-xl shadow-2xl flex items-center gap-3 animate-fade-in-up border border-slate-700 pointer-events-auto';
+                toast.innerHTML = `<div class="bg-emerald-500/20 p-1.5 rounded-lg border border-emerald-500/30"><i data-lucide="${icon}" class="w-5 h-5 text-emerald-400"></i></div> <span class="text-sm font-bold">${msg}</span>`;
+                container.appendChild(toast);
+                lucide.createIcons();
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(10px)';
+                    toast.style.transition = 'all 0.3s ease';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3500);
+            },
             render: () => {
                 const app = document.getElementById('app');
                 if (AppState.view === 'gateway') {
@@ -261,6 +281,7 @@
                             <div id="main-content" class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar pb-24 md:pb-8"></div>
                         </div>
                         <div id="modal-container"></div>
+                        <div id="toast-container" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none"></div>
                     `;
                     UI.renderContent();
                 }
@@ -284,7 +305,7 @@
                                 
                                 <div class="flex gap-4">
                                     <button onclick="Actions.closeModal()" class="flex-1 bg-slate-100 p-4 rounded-2xl font-black text-slate-600 hover:bg-slate-200 transition-all">Cancel</button>
-                                    <button onclick="Actions.confirmSchedule()" class="flex-1 bg-blue-600 text-white p-4 rounded-2xl font-black shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all flex items-center justify-center gap-2">Send Invite <i data-lucide="send" class="w-4 h-4"></i></button>
+                                    <button onclick="Actions.confirmSchedule()" class="flex-1 bg-emerald-600 text-white p-4 rounded-2xl font-black shadow-lg shadow-emerald-500/30 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2">Send WA Invite <i data-lucide="message-circle" class="w-4 h-4 fill-emerald-500"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -327,7 +348,6 @@
             }
         };
 
-        // --- COMPONENTS ---
         const Components = {
             Sidebar: () => {
                 const nav = {
@@ -413,7 +433,6 @@
             }
         };
 
-        // --- VIEWS ---
         const Views = {
             Gateway: () => `
                 <div class="absolute inset-0 bg-slate-50 flex flex-col items-center justify-center p-6 z-50 overflow-hidden">
@@ -466,7 +485,6 @@
                     const u = DB.currentUser;
                     return `
                         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in-up">
-                            
                             <div class="bento-card bg-blue-600 border-none lg:col-span-8 p-8 md:p-10 stagger-1 shadow-xl">
                                 <div class="flex justify-between items-start mb-10">
                                     <div>
@@ -605,7 +623,21 @@
                                             </div>
                                         </div>
                                         <h3 class="font-black text-xl md:text-2xl text-slate-900 leading-tight mb-2">${job.title}</h3>
-                                        <p class="text-sm font-bold text-slate-600 mb-6">${job.company}</p>
+                                        <p class="text-sm font-bold text-slate-600 mb-5">${job.company}</p>
+                                        
+                                        ${job.reversePitch ? `
+                                            <div class="mb-6">
+                                                <a href="https://www.youtube.com/watch?v=${job.reversePitch}" target="_blank" class="w-full relative rounded-xl overflow-hidden block group/pitch border-2 border-slate-200 shadow-sm">
+                                                    <img src="https://i.ytimg.com/vi/${job.reversePitch}/hqdefault.jpg" class="w-full h-28 object-cover opacity-80 group-hover/pitch:scale-105 transition-all duration-500">
+                                                    <div class="absolute inset-0 bg-slate-900/30 flex items-center justify-center">
+                                                        <div class="bg-white/90 p-3 rounded-full shadow-lg group-hover/pitch:scale-110 group-hover/pitch:bg-blue-600 transition-all">
+                                                            <i data-lucide="play" class="w-5 h-5 text-blue-600 fill-blue-600 ml-1 group-hover/pitch:text-white group-hover/pitch:fill-white transition-colors"></i>
+                                                        </div>
+                                                    </div>
+                                                    <span class="absolute top-2 left-2 bg-rose-600 text-white text-[9px] font-black px-2 py-1 rounded shadow-md uppercase tracking-wider flex items-center gap-1"><i data-lucide="flame" class="w-3 h-3"></i> SME Pitch</span>
+                                                </a>
+                                            </div>
+                                        ` : ''}
                                         
                                         <div class="flex flex-wrap gap-2 mb-8 mt-auto">
                                             <span class="bg-slate-100 text-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-200 flex items-center gap-1.5"><i data-lucide="map-pin" class="w-4 h-4 text-blue-500"></i> ${job.location}</span>
@@ -887,6 +919,17 @@
                                     <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-2">Required Skills</label>
                                     <textarea rows="3" placeholder="Financial Modeling, Excel, SPSS..." class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all"></textarea>
                                 </div>
+
+                                <div class="p-6 bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <div>
+                                            <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1 flex items-center gap-2"><i data-lucide="video" class="w-4 h-4 text-rose-500"></i> "Day in the Life" Reverse-Pitch</label>
+                                            <p class="text-xs font-bold text-slate-500">Optional: Stand out to top talent by showing your office and team culture.</p>
+                                        </div>
+                                        <span class="bg-blue-100 text-blue-800 text-[10px] font-black px-2 py-1 rounded uppercase tracking-widest border border-blue-200">New Feature</span>
+                                    </div>
+                                    <input type="text" placeholder="Paste YouTube Video ID or URL (e.g. WEdMAV1aQWc)" class="w-full bg-white border-2 border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all">
+                                </div>
                             </div>
                             <div class="mt-8 pt-6 border-t border-slate-200 flex justify-end gap-4">
                                 <button type="button" onclick="Actions.setTab('dashboard')" class="px-6 py-3.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors framer-btn whitespace-nowrap">Cancel</button>
@@ -902,7 +945,7 @@
                     const labels = { applied: 'Applied', interview: 'Interviewing', offer: 'Offered', rejected: 'Rejected' };
                     return `
                         <div class="h-full flex flex-col animate-fade-in-up">
-                            <p class="text-slate-600 font-bold mb-6 text-lg">Manage talent pipeline. Feature: Seamlessly schedule 1-click interviews.</p>
+                            <p class="text-slate-600 font-bold mb-6 text-lg">Manage talent pipeline. Includes 1-click WhatsApp Integration.</p>
                             <div class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 overflow-x-auto pb-4">
                                 ${stages.map(stage => `
                                     <div class="kanban-col flex flex-col h-full p-4 min-w-[300px] shadow-inner bg-slate-100 border-2 border-slate-200">
@@ -933,9 +976,9 @@
                                                     </div>
                                                     <div class="pt-4 border-t border-slate-100 grid grid-cols-2 gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
                                                         ${stage === 'applied' ? `
-                                                            <button onclick="Actions.openScheduleModal(${c.id})" class="col-span-2 bg-blue-600 text-white text-[10px] font-black py-2.5 rounded-xl hover:bg-blue-700 transition-colors framer-btn shadow-md whitespace-nowrap flex items-center justify-center gap-1"><i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i> Schedule Interview</button>
+                                                            <button onclick="Actions.openScheduleModal(${c.id})" class="col-span-2 bg-blue-600 text-white text-[10px] font-black py-2.5 rounded-xl hover:bg-blue-700 transition-colors framer-btn shadow-md whitespace-nowrap flex items-center justify-center gap-1.5"><i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i> Schedule Interview</button>
                                                         ` : stage === 'interview' ? `
-                                                            <button onclick="Actions.moveCandidate(${c.id}, 'offer')" class="bg-emerald-600 text-white text-[10px] font-black py-2.5 rounded-xl hover:bg-emerald-700 transition-colors framer-btn shadow-md whitespace-nowrap">Offer</button>
+                                                            <button onclick="Actions.moveCandidate(${c.id}, 'offer')" class="bg-emerald-600 text-white text-[10px] font-black py-2.5 rounded-xl hover:bg-emerald-700 transition-colors framer-btn shadow-md whitespace-nowrap flex items-center justify-center gap-1">WA Offer <i data-lucide="message-circle" class="w-3 h-3 fill-emerald-500"></i></button>
                                                             <button onclick="Actions.moveCandidate(${c.id}, 'rejected')" class="bg-white text-rose-700 border-2 border-rose-200 text-[10px] font-black py-2.5 rounded-xl hover:bg-rose-50 transition-colors framer-btn whitespace-nowrap">Reject</button>
                                                         ` : `<span class="col-span-2 text-center text-[10px] font-black text-slate-500 uppercase tracking-widest py-1.5 whitespace-nowrap">Final Stage</span>`}
                                                     </div>
