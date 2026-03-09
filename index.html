@@ -274,6 +274,56 @@
                 AppState.requestedMentees.add(id);
                 UI.showToast('Mentorship request sent successfully.', 'send');
                 UI.renderContent();
+            },
+            updateBenchmark: () => {
+                const domainEl = document.getElementById('post-domain');
+                const locEl = document.getElementById('post-location');
+                const stipendEl = document.getElementById('post-stipend');
+                const widgetEl = document.getElementById('benchmark-widget');
+
+                if (!domainEl || !locEl || !stipendEl || !widgetEl) return;
+
+                const domain = domainEl.value;
+                const loc = locEl.value.split('/')[0].trim() || 'Coimbatore';
+                const stipend = parseInt(stipendEl.value);
+
+                if (isNaN(stipend) || stipend <= 0) {
+                    widgetEl.classList.add('hidden');
+                    return;
+                }
+
+                // Mock dynamic market averages
+                let avg = 15000;
+                if (domain === 'Finance') avg = 18000;
+                if (domain === 'Technology') avg = 20000;
+                if (domain === 'Economics') avg = 16000;
+                if (domain === 'Operations') avg = 14000;
+
+                let statusColor = 'text-amber-800 bg-amber-50 border-amber-200';
+                let icon = 'alert-triangle';
+                let iconColor = 'text-amber-500';
+                let message = `The average stipend for a ${domain} Intern in ${loc} is currently ₹${avg.toLocaleString()}/mo. Your offer is below average, which may impact candidate flow.`;
+
+                if (stipend >= avg + 4000) {
+                    statusColor = 'text-emerald-800 bg-emerald-50 border-emerald-200';
+                    icon = 'trending-up';
+                    iconColor = 'text-emerald-500';
+                    message = `The average stipend for a ${domain} Intern in ${loc} is currently ₹${avg.toLocaleString()}/mo. Your offer is highly competitive!`;
+                } else if (stipend >= avg) {
+                    statusColor = 'text-blue-800 bg-blue-50 border-blue-200';
+                    icon = 'check-circle';
+                    iconColor = 'text-blue-500';
+                    message = `The average stipend for a ${domain} Intern in ${loc} is currently ₹${avg.toLocaleString()}/mo. Your offer is competitive.`;
+                }
+
+                widgetEl.innerHTML = `
+                    <div class="p-3.5 mt-3 rounded-xl border flex gap-3 items-start ${statusColor} animate-fade-in-up transition-all shadow-sm">
+                        <i data-lucide="${icon}" class="w-5 h-5 mt-0.5 ${iconColor} shrink-0"></i>
+                        <p class="text-xs font-bold leading-relaxed">${message}</p>
+                    </div>
+                `;
+                widgetEl.classList.remove('hidden');
+                if (window.lucide) window.lucide.createIcons();
             }
         };
 
@@ -1035,19 +1085,20 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-2">Domain</label>
-                                        <select required class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:ring-0 focus:border-blue-500">
+                                        <select id="post-domain" onchange="Actions.updateBenchmark()" required class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:ring-0 focus:border-blue-500">
                                             <option>Finance</option><option>Economics</option><option>Technology</option><option>Operations</option>
                                         </select>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-2">Location</label>
-                                        <input type="text" required placeholder="e.g. Coimbatore / Remote" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all">
+                                        <input id="post-location" oninput="Actions.updateBenchmark()" type="text" required placeholder="e.g. Coimbatore / Remote" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all">
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-2">Stipend (₹/mo)</label>
-                                        <input type="number" required placeholder="15000" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all">
+                                        <input id="post-stipend" oninput="Actions.updateBenchmark()" type="number" required placeholder="15000" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-900 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all">
+                                        <div id="benchmark-widget" class="hidden"></div>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-black text-slate-800 uppercase tracking-wider mb-2">Duration (Months)</label>
